@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARIA — Drone Fleet Operations</title>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@300;400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0F0E0D;
+    --surface: #181612;
+    --card: #1E1C18;
+    --card2: #252219;
+    --card3: #2A2720;
+    --border: rgba(200,169,110,0.1);
+    --gold: #C8A96E;
+    --gold-bright: #E8C878;
+    --gold-dim: rgba(200,169,110,0.4);
+    --text: #F0EDE8;
+    --text2: #9B9590;
+    --text3: #605D58;
+    --red: #E05555;
+    --blue: #5B9BD5;
+    --r: 14px;
+  }
+
+  html, body { width: 100%; height: 100%; background: #0A0908; overflow: hidden; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #root { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  @keyframes float-target { 0%,100%{transform:translate(0,0)} 33%{transform:translate(3px,-2px)} 66%{transform:translate(-2px,2px)} }
+  @keyframes scan-line { 0%{top:0%} 100%{top:100%} }
+  @keyframes compass-spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+  @keyframes data-flicker { 0%,100%{opacity:1} 95%{opacity:0.85} }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+// ─── tiny helpers ───────────────────────────────────────────────
+const mono = { fontFamily: "'DM Mono', monospace" };
+const pad = (n, len=2) => String(Math.floor(n)).padStart(len,'0');
+const fmt = (n, dec=1) => n.toFixed(dec);
+
+// ─── Icons (inline SVG) ──────────────────────────────────────────
+const Icon = ({ name, size=18, color='currentColor', style={} }) => {
+  const paths = {
+    home:      <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" stroke={color} strokeWidth="1.5" fill="none" strokeLinejoin="round"/>,
+    compass:   <><circle cx="12" cy="12" r="9" stroke={color} strokeWidth="1.5" fill="none"/><path d="M16.24 7.76l-2.12 6.36-6.36 2.12 2.12-6.36 6.36-2.12z" fill={color}/></>,
+    gallery:   <><rect x="3" y="3" width="18" height="18" rx="2" stroke={color} strokeWidth="1.5" fill="none"/><circle cx="8.5" cy="8.5" r="1.5" fill={color}/><path d="M21 15l-5-5L5 21" stroke={color} strokeWidth="1.5" fill="none"/></>,
+    user:      <><circle cx="12" cy="8" r="4" stroke={color} strokeWidth="1.5" fill="none"/><path d="M4 20c0-4 3.58-7 8-7s8 3 8 7" stroke={color} strokeWidth="1.5" fill="none" strokeLinecap="round"/></>,
+    settings:  <><circle cx="12" cy="12" r="3" stroke={color} strokeWidth="1.5" fill="none"/><path d="M12 2v2m0 16v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M2 12h2m16 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke={color} strokeWidth="1.5" strokeLinecap="round"/></>,
+    bell:      <><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" stroke={color} strokeWidth="1.5" fill="none" strokeLinejoin="round"/><path d="M13.73 21a2 2 0 01-3.46 0" stroke={color} strokeWidth="1.5" strokeLinecap="round"/></>,
+    waypoints: <><circle cx="12" cy="5" r="2" stroke={color} strokeWidth="1.5" fill="none"/><circle cx="5" cy="19" r="2" stroke={color} strokeWidth="1.5" fill="none"/><circle cx="19" cy="19" r="2" stroke={color} strokeWidth="1.5" fill="none"/><path d="M12 7v4m-5.27 6.5L10 13m9.27 6.5L14 13" stroke={color} strokeWidth="1.5" strokeLinecap="round"/></>,
+    power:     <><path d="M12 3v9" stroke={color} strokeWidth="2" strokeLinecap="round"/><path d="M18.36 5.64a9 9 0 11-12.72 0" stroke={color} strokeWidth="1.5" fill="none" strokeLinecap="round"/></>,
+    drone:     <><rect x="8" y="8" width="8" height="8" rx="1" fill="none" stroke={color} strokeWidth="1.5"/><path d="M8 8L4 4m12 0L20 8m0 8l-4 4M8 20L4 16" stroke={color} strokeWidth="1.5" strokeLinecap="round"/><circle cx="4" cy="4" r="2" fill={color}/><circle cx="20" cy="4" r="2" fill={color}/><circle cx="20" cy="20" r="2" fill={color}/><circle cx="4" cy="20" r="2" fill={color}/></>,
+    pause:     <><rect x="6" y="4" width="4" height="16" rx="1" fill={color}/><rect x="14" y="4" width="4" height="16" rx="1" fill={color}/></>,
+    play:      <path d="M6 4l14 8-14 8V4z" fill={color}/>,
+    chevup:    <path d="M18 15l-6-6-6 6" stroke={color} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>,
+    chevdown:  <path d="M6 9l6 6 6-6" stroke={color} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>,
+    chevleft:  <path d="M15 18l-6-6 6-6" stroke={color} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>,
+    chevright: <path d="M9 18l6-6-6-6" stroke={color} strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>,
+    camera:    <><rect x="2" y="7" width="20" height="14" rx="2" stroke={color} strokeWidth="1.5" fill="none"/><circle cx="12" cy="14" r="4" stroke={color} strokeWidth="1.5" fill="none"/><path d="M16 7l-1.5-3h-5L8 7" stroke={color} strokeWidth="1.5" fill="none" strokeLinejoin="round"/></>,
+    grid:      <><path d="M8 3v18M16 3v18M3 8h18M3 16h18" stroke={color} strokeWidth="1.5" strokeLinecap="round"/></>,
+    moon:      <path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z" fill="none" stroke={color} strokeWidth="1.5" strokeLinejoin="round"/>,
+    hdr:       <text x="2" y="17" fontSize="12" fontWeight="700" fill={color} fontFamily="DM Sans">HDR</text>,
+  };
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" style={style}>
+      {paths[name] || null}
+    </svg>
+  );
+};
+
+// ─── Desert Camera Feed SVG ─────────────────────────────────────
+const DesertFeed = ({ recording, paused }) => (
+  <svg viewBox="0 0 900 480" style={{width:'100%',height:'100%',display:'block',borderRadius:'inherit'}}>
+    <defs>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="#7B6040"/>
+        <stop offset="60%" stopColor="#A07848"/>
+        <stop offset="100%" stopColor="#C49050"/>
+      </linearGradient>
+      <linearGradient id="mtn" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="#5C4830"/>
+        <stop offset="100%" stopColor="#7A5E38"/>
+      </linearGradient>
+      <linearGradient id="terrain" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stopColor="#8B6A3A"/>
+        <stop offset="100%" stopColor="#5A3E20"/>
+      </linearGradient>
+      <filter id="warm">
+        <feColorMatrix type="matrix" values="1.15 0.1 0 0 0  0.05 1 0 0 0  0 0 0.6 0 0  0 0 0 1 0"/>
+      </filter>
+      <filter id="haze">
+        <feGaussianBlur stdDeviation="0.8"/>
+      </filter>
+    </defs>
+    {/* sky */}
+    <rect width="900" height="480" fill="url(#sky)"/>
+    {/* distant mountains */}
+    <polygon points="0,200 80,120 160,160 250,90 340,140 420,80 500,130 580,95 660,150 740,100 820,145 900,110 900,220 0,220" fill="url(#mtn)" opacity="0.7" filter="url(#haze)"/>
+    {/* mid mountains */}
+    <polygon points="0,240 60,195 140,215 200,185 280,210 360,175 440,205 510,180 590,210 660,185 740,215 810,190 900,210 900,270 0,270" fill="#6B4E2A" opacity="0.85"/>
+    {/* terrain ridges */}
+    <polygon points="0,290 50,260 120,275 190,255 270,280 340,260 420,290 500,265 580,285 650,262 730,280 810,265 900,280 900,340 0,340" fill="#7A5535"/>
+    <polygon points="0,330 70,305 150,320 220,305 300,330 380,310 460,335 540,315 620,335 700,315 790,335 870,315 900,325 900,480 0,480" fill="url(#terrain)"/>
+    {/* foreground detail lines */}
+    {[0,1,2,3,4].map(i => (
+      <path key={i} d={`M${i*80},${360+i*18} Q${200+i*60},${350+i*15} ${400+i*40},${365+i*18} Q${600+i*20},${370+i*20} 900,${360+i*18}`}
+        stroke="#4A3018" strokeWidth="1.5" fill="none" opacity={0.4+i*0.1}/>
+    ))}
+    {/* scan line overlay */}
+    {!paused && (
+      <rect x="0" y="0" width="900" height="3" fill="rgba(200,169,110,0.15)" style={{animation:'scan-line 4s linear infinite'}}/>
+    )}
+    {/* grid overlay */}
+    <g stroke="rgba(255,255,255,0.08)" strokeWidth="0.8">
+      {[1,2,3,4,5,6,7,8].map(i => <line key={`v${i}`} x1={i*100} y1="0" x2={i*100} y2="480"/>)}
+      {[1,2,3,4,5].map(i => <line key={`h${i}`} x1="0" y1={i*80} x2="900" y2={i*80}/>)}
+    </g>
+    {/* warm overlay */}
+    <rect width="900" height="480" fill="rgba(180,100,20,0.1)"/>
+    {/* vignette */}
+    <radialGradient id="vignette" cx="50%" cy="50%">
+      <stop offset="60%" stopColor="transparent"/>
+      <stop offset="100%" stopColor="rgba(5,3,1,0.6)"/>
+    </radialGradient>
+    <rect width="900" height="480" fill="url(#vignette)"/>
+  </svg>
+);
+
+// ─── Histogram ──────────────────────────────────────────────────
+const Histogram = () => {
+  const bars = [3,5,8,12,18,22,28,35,42,38,30,25,20,15,10,8,6,4,3,2];
+  return (
+    <div style={{background:'rgba(0,0,0,0.65)',borderRadius:8,padding:'6px 8px',border:'1px solid rgba(255,255,255,0.06)'}}>
+      <div style={{display:'flex',gap:1,alignItems:'flex-end',height:32}}>
+        {bars.map((h,i)=>(
+          <div key={i} style={{width:6,height:`${(h/42)*100}%`,background:`hsl(${30+i*4},60%,${40+h}%)`,borderRadius:1,opacity:0.9}}/>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// ─── Mini Map ───────────────────────────────────────────────────
+const MiniMap = () => (
+  <div style={{position:'relative',width:'100%',height:'100%',borderRadius:10,overflow:'hidden',background:'#1a1a1a'}}>
+    <svg viewBox="0 0 200 140" style={{width:'100%',height:'100%'}}>
+      <defs>
+        <linearGradient id="mapbg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#2a2820"/>
+          <stop offset="100%" stopColor="#1a1a14"/>
+        </linearGradient>
+      </defs>
+      <rect width="200" height="140" fill="url(#mapbg)"/>
+      {/* terrain lines */}
+      {[20,35,50,65,80,95,110].map((y,i)=>(
+        <path key={i} d={`M0,${y} Q${40+i*10},${y-8} ${80+i*5},${y} Q${140},${y+5} 200,${y-3}`}
+          stroke="rgba(120,100,60,0.4)" strokeWidth="1" fill="none"/>
+      ))}
+      {/* road */}
+      <path d="M20,70 Q70,65 100,75 Q140,85 180,72" stroke="rgba(200,160,80,0.5)" strokeWidth="2" fill="none"/>
+      {/* location dot */}
+      <circle cx="100" cy="72" r="4" fill="#C8A96E" opacity="0.9"/>
+      <circle cx="100" cy="72" r="8" fill="none" stroke="#C8A96E" strokeWidth="1" opacity="0.4"/>
+      {/* labels */}
+      <text x="30" y="50" fontSize="7" fill="#888580" fontFamily="DM Sans">Death Valley</text>
+      <text x="110" y="90" fontSize="7" fill="#888580" fontFamily="DM Sans">Hot Springs</text>
+    </svg>
+  </div>
+);
+
+// ─── D-Pad ──────────────────────────────────────────────────────
+const DPad = ({ onPress }) => {
+  const btn = (dir, label, icon) => (
+    <button
+      onClick={()=>onPress(dir)}
+      style={{
+        background:'rgba(255,255,255,0.05)',
+        border:'1px solid rgba(255,255,255,0.08)',
+        borderRadius: dir==='center' ? '50%' : 8,
+        color:dir==='center'?'var(--text2)':'var(--text)',
+        cursor:'pointer',
+        display:'flex',alignItems:'center',justifyContent:'center',
+        fontSize: dir==='center'?9:12,
+        fontFamily:'DM Sans',
+        fontWeight:500,
+        transition:'all 0.12s',
+        width: dir==='center'?52:36,
+        height: dir==='center'?52:36,
+        flexShrink:0,
+        letterSpacing:'0.05em',
+        textTransform:'uppercase',
+      }}
+      onMouseDown={e=>e.currentTarget.style.background='rgba(200,169,110,0.15)'}
+      onMouseUp={e=>e.currentTarget.style.background='rgba(255,255,255,0.05)'}
+      onMouseLeave={e=>e.currentTarget.style.background='rgba(255,255,255,0.05)'}
+    >
+      {icon ? <Icon name={icon} size={14} color="var(--text2)"/> : label}
+    </button>
+  );
+  return (
+    <div style={{display:'grid',gridTemplateColumns:'36px 52px 36px',gridTemplateRows:'36px 52px 36px',gap:4,alignItems:'center',justifyItems:'center'}}>
+      <div/>{btn('up','','chevup')}<div/>
+      {btn('left','','chevleft')}{btn('center','Menu')}{btn('right','','chevright')}
+      <div/>{btn('down','','chevdown')}<div/>
+    </div>
+  );
+};
+
+// ─── Compass ────────────────────────────────────────────────────
+const Compass = ({ heading }) => {
+  const cardinals = [
+    {label:'N',deg:0},{label:'NE',deg:45},{label:'E',deg:90},{label:'SE',deg:135},
+    {label:'S',deg:180},{label:'SW',deg:225},{label:'W',deg:270},{label:'NW',deg:315},
+  ];
+  const ticks = Array.from({length:72},(_,i)=>i*5);
+  const r = 88;
+  return (
+    <div style={{position:'relative',width:'100%',height:'100%',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:8}}>
+      {/* degree badge */}
+      <div style={{
+        background:'var(--blue)',
+        color:'#fff',
+        fontSize:12,
+        fontWeight:600,
+        padding:'3px 12px',
+        borderRadius:20,
+        letterSpacing:'0.08em',
+        ...mono,
+        zIndex:2,
+      }}>
+        {Math.round(heading)}°
+      </div>
+
+      {/* compass ring */}
+      <div style={{position:'relative',width:200,height:200,flexShrink:0}}>
+        {/* outer ring */}
+        <svg viewBox="-110 -110 220 220" style={{width:'100%',height:'100%',position:'absolute',inset:0}}>
+          <defs>
+            <radialGradient id="compassbg" cx="50%" cy="50%">
+              <stop offset="0%" stopColor="#2A2720"/>
+              <stop offset="100%" stopColor="#161410"/>
+            </radialGradient>
+          </defs>
+          <circle r="105" fill="#111008" stroke="rgba(200,169,110,0.15)" strokeWidth="1.5"/>
+          <circle r="98" fill="url(#compassbg)" stroke="rgba(200,169,110,0.08)" strokeWidth="0.5"/>
+          
+          {/* tick marks */}
+          <g style={{transform:`rotate(${-heading}deg)`,transformOrigin:'center',transition:'transform 0.3s ease'}}>
+            {ticks.map(deg=>{
+              const rad = deg*(Math.PI/180);
+              const major = deg%90===0, minor = deg%45===0;
+              const inner = major?76:minor?80:84;
+              const x1=Math.sin(rad)*inner, y1=-Math.cos(rad)*inner;
+              const x2=Math.sin(rad)*r, y2=-Math.cos(rad)*r;
+              return <line key={deg} x1={x1} y1={y1} x2={x2} y2={y2}
+                stroke={major?'var(--gold)':minor?'rgba(200,169,110,0.5)':'rgba(255,255,255,0.15)'}
+                strokeWidth={major?1.5:minor?1:0.5}/>;
+            })}
+            {/* cardinal labels */}
+            {cardinals.map(({label,deg})=>{
+              const rad=deg*(Math.PI/180);
+              const dist=66;
+              return <text key={label} x={Math.sin(rad)*dist} y={-Math.cos(rad)*dist+4}
+                textAnchor="middle" fontSize={label.length===1?11:8}
+                fontWeight={label.length===1?700:400}
+                fill={label==='N'?'var(--gold)':'rgba(240,237,232,0.8)'}
+                fontFamily="DM Sans">{label}</text>;
+            })}
+            {/* crosshair lines */}
+            <line x1="0" y1="-88" x2="0" y2="88" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5"/>
+            <line x1="-88" y1="0" x2="88" y2="0" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5"/>
+          </g>
+
+          {/* fixed north pointer */}
+          <polygon points="0,-78 5,-50 0,-40 -5,-50" fill="var(--gold)" opacity="0.9"/>
+          <polygon points="0,-40 5,-50 0,-78 -5,-50" fill="rgba(200,169,110,0.3)"/>
+          {/* center dot */}
+          <circle r="5" fill="var(--gold)"/>
+          <circle r="2" fill="#0F0E0D"/>
+        </svg>
+      </div>
+
+      {/* GPS coords */}
+      <div style={{textAlign:'center',lineHeight:1.4}}>
+        <div style={{fontSize:10,...mono,color:'var(--text2)',letterSpacing:'0.05em'}}>
+          56.7438° N, 78.23521° E
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Main App ───────────────────────────────────────────────────
+function App() {
+  const [activeNav, setActiveNav] = useState('compass');
+  const [recording, setRecording] = useState(true);
+  const [paused, setPaused] = useState(false);
+  const [recTime, setRecTime] = useState(129); // seconds
+  const [mediaTab, setMediaTab] = useState('video');
+  const [battery, setBattery] = useState(75);
+  const [altitude, setAltitude] = useState(80);
+  const [speed, setSpeed] = useState(20);
+  const [heading, setHeading] = useState(83);
+  const [flightSec, setFlightSec] = useState(343);
+  const [iso, setIso] = useState(600);
+  const [aperture] = useState(2.85);
+  const [sliderVal, setSliderVal] = useState(8.3);
+  const [activeMode, setActiveMode] = useState('hdr');
+  const [frameLines] = useState(['1920:1080','1280:720','854:480','640:360']);
+  const [activeLine, setActiveLine] = useState('1280:720');
+  const [fps, setFps] = useState(19.67);
+  const [locked] = useState(true);
+  const [dpadMsg, setDpadMsg] = useState('');
+
+  // Live telemetry simulation (fallback when WebSocket not connected)
+  const [wsConnected, setWsConnected] = useState(false);
+  const [observation, setObservation] = useState('Awaiting AI analysis...');
+  const [threat, setThreat] = useState('none');
+  const [agentAction, setAgentAction] = useState('hover');
+  const [liveFrame, setLiveFrame] = useState(null);
+
+  useEffect(()=>{
+    const interval = setInterval(()=>{
+      if(!paused && !wsConnected) {
+        setRecTime(t=>t+1);
+        setFlightSec(t=>t+1);
+        setHeading(h=>(h + 0.08 + (Math.random()-0.5)*0.1 + 360)%360);
+        setSpeed(s=>Math.max(15,Math.min(28, s+(Math.random()-0.5)*1.2)));
+        setAltitude(a=>Math.max(70,Math.min(95, a+(Math.random()-0.5)*0.8)));
+        setFps(f=>Math.max(18.5,Math.min(21, f+(Math.random()-0.5)*0.3)));
+        setIso(i=>Math.max(560,Math.min(650, i+(Math.random()-0.5)*8)));
+      }
+    }, 1000);
+    return ()=>clearInterval(interval);
+  },[paused, wsConnected]);
+
+  // WebSocket connection to ARIA server
+  useEffect(()=>{
+    const connect = () => {
+      try {
+        const ws = new WebSocket('ws://localhost:3001');
+
+        ws.onopen = () => {
+          setWsConnected(true);
+          console.log('ARIA: Connected to server');
+        };
+
+        ws.onmessage = (event) => {
+          try {
+            const data = JSON.parse(event.data);
+            if (data.type !== 'update') return;
+
+            // Update live camera frame
+            if (data.frame) {
+              setLiveFrame('data:image/jpeg;base64,' + data.frame);
+            }
+
+            // Update telemetry from MAVLink
+            if (data.telemetry) {
+              const t = data.telemetry;
+              if (t.altitude !== undefined) setAltitude(parseFloat(t.altitude) || 0);
+              if (t.heading !== undefined) setHeading(parseFloat(t.heading) || 0);
+              if (t.battery !== undefined) setBattery(parseInt(t.battery) || 75);
+              if (t.speed !== undefined) setSpeed(parseFloat(t.speed) || 0);
+              setFlightSec(s => s + 1);
+              setRecTime(t2 => t2 + 1);
+            }
+
+            // Update AI agent analysis
+            if (data.analysis) {
+              setObservation(data.analysis.observation || '');
+              setThreat(data.analysis.threat || 'none');
+              setAgentAction((data.analysis.action || 'hover') + ' ' + (data.analysis.direction !== 'none' ? data.analysis.direction : ''));
+            }
+          } catch(e) { console.warn('ARIA parse error:', e); }
+        };
+
+        ws.onclose = () => {
+          setWsConnected(false);
+          console.log('ARIA: Disconnected. Reconnecting in 3s...');
+          setTimeout(connect, 3000);
+        };
+
+        ws.onerror = () => ws.close();
+
+        return ws;
+      } catch(e) {
+        console.log('ARIA: WebSocket unavailable, using simulation');
+      }
+    };
+
+    const ws = connect();
+    return () => ws && ws.close();
+  }, []);
+
+  const handleDpad = (dir) => {
+    const msgs = {up:'↑ Pitch Forward',down:'↓ Pitch Back',left:'← Yaw Left',right:'→ Yaw Right',center:'Menu'};
+    setDpadMsg(msgs[dir]||'');
+    setTimeout(()=>setDpadMsg(''),1200);
+  };
+
+  const navItems = ['home','compass','gallery','user','settings','bell','waypoints'];
+
+  const cardStyle = {
+    background:'var(--card)',
+    borderRadius: 'var(--r)',
+    border:'1px solid rgba(255,255,255,0.04)',
+    overflow:'hidden',
+  };
+
+  // format time
+  const fmtTime = (s) => `${pad(Math.floor(s/60))}:${pad(s%60)}`;
+
+  return (
+    <div style={{
+      width:'100vw', height:'100vh',
+      background:'#0A0908',
+      display:'flex',
+      alignItems:'center',
+      justifyContent:'center',
+      padding:16,
+    }}>
+      {/* ── Main shell ── */}
+      <div style={{
+        width:'100%', maxWidth:1380,
+        height:'100%', maxHeight:860,
+        display:'grid',
+        gridTemplateColumns:'58px 1fr 260px',
+        gridTemplateRows:'1fr',
+        gap:10,
+      }}>
+
+        {/* ── LEFT SIDEBAR ── */}
+        <div style={{
+          ...cardStyle,
+          display:'flex', flexDirection:'column',
+          alignItems:'center',
+          padding:'16px 0',
+          gap:6,
+        }}>
+          {/* Logo */}
+          <div style={{
+            width:36, height:36, borderRadius:10,
+            background:'linear-gradient(135deg,#C8A96E,#8B6030)',
+            display:'flex', alignItems:'center', justifyContent:'center',
+            fontSize:11, fontWeight:700, letterSpacing:'0.05em', color:'#0F0E0D',
+            marginBottom:10, flexShrink:0,
+          }}>AR</div>
+
+          {navItems.map(n=>(
+            <button key={n} onClick={()=>setActiveNav(n)} style={{
+              width:40, height:40, borderRadius:10, border:'none',
+              background: activeNav===n ? 'rgba(200,169,110,0.15)' : 'transparent',
+              color: activeNav===n ? 'var(--gold)' : 'var(--text3)',
+              cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center',
+              transition:'all 0.15s',
+              outline: activeNav===n ? '1px solid rgba(200,169,110,0.25)' : 'none',
+            }}>
+              <Icon name={n} size={17} color={activeNav===n?'var(--gold)':'var(--text3)'}/>
+            </button>
+          ))}
+
+          <div style={{flex:1}}/>
+          <div style={{width:32,height:1,background:'var(--border)',marginBottom:4}}/>
+
+          {/* Avatar */}
+          <div style={{
+            width:32, height:32, borderRadius:'50%',
+            background:'linear-gradient(135deg,#6B8A9E,#3A5A6E)',
+            display:'flex',alignItems:'center',justifyContent:'center',
+            fontSize:11, fontWeight:600, color:'#fff', marginBottom:6,
+          }}>TS</div>
+
+          <button style={{width:40,height:40,borderRadius:10,border:'none',background:'transparent',color:'var(--text3)',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
+            <Icon name="power" size={17} color="var(--text3)"/>
+          </button>
+        </div>
+
+        {/* ── CENTER COLUMN ── */}
+        <div style={{display:'grid',gridTemplateRows:'1fr auto',gap:10,minHeight:0}}>
+
+          {/* ── CAMERA FEED ── */}
+          <div style={{...cardStyle,position:'relative',overflow:'hidden',minHeight:0}}>
+            {/* Live camera frame overlay - shown when WebSocket connected */}
+            {liveFrame && (
+              <img src={liveFrame} style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover',zIndex:1,opacity:0.9}} alt="live"/>
+            )}
+            {/* Fallback simulated feed */}
+            <DesertFeed recording={recording} paused={paused}/>
+
+            {/* HUD overlays */}
+            <div style={{position:'absolute',inset:0,pointerEvents:'none',zIndex:2}}>
+              {/* WebSocket status + AI observation bar at bottom */}
+              <div style={{
+                position:'absolute',bottom:0,left:0,right:0,
+                background:'linear-gradient(transparent,rgba(0,0,0,0.7))',
+                padding:'20px 16px 12px',
+                display:'flex',justifyContent:'space-between',alignItems:'flex-end',
+              }}>
+                <div style={{maxWidth:'60%'}}>
+                  {observation && (
+                    <div style={{fontSize:10,color:'rgba(240,237,232,0.8)',fontFamily:"'DM Mono',monospace",lineHeight:1.4}}>
+                      <span style={{
+                        color: threat==='high'?'#E05555':threat==='medium'?'#E08020':threat==='low'?'#C8A96E':'#6DB86D',
+                        marginRight:8,fontSize:9,letterSpacing:'0.1em'
+                      }}>
+                        ● {threat.toUpperCase()}
+                      </span>
+                      {observation}
+                    </div>
+                  )}
+                </div>
+                <div style={{
+                  fontSize:9,fontFamily:"'DM Mono',monospace",
+                  color: wsConnected ? '#6DB86D' : 'rgba(255,255,255,0.3)',
+                  letterSpacing:'0.1em',
+                  display:'flex',alignItems:'center',gap:6,
+                }}>
+                  <div style={{
+                    width:6,height:6,borderRadius:'50%',
+                    background: wsConnected ? '#6DB86D' : '#444',
+                    boxShadow: wsConnected ? '0 0 8px #6DB86D' : 'none',
+                  }}/>
+                  {wsConnected ? 'ARIA LIVE' : 'SIM MODE'}
+                </div>
+              </div>
+              {/* top-left HUD */}
+              <div style={{position:'absolute',top:12,left:12,display:'flex',flexDirection:'column',gap:8}}>
+                {/* HDR badge */}
+                <div style={{
+                  background:'rgba(20,18,14,0.85)', border:'1px solid rgba(200,169,110,0.3)',
+                  borderRadius:6, padding:'3px 10px',
+                  fontSize:11, fontWeight:700, letterSpacing:'0.15em',color:'var(--text)',
+                  backdropFilter:'blur(4px)',display:'inline-flex',alignSelf:'flex-start',
+                }}>HDR</div>
+                {/* res + fps */}
+                <div style={{fontSize:11,...mono,color:'var(--gold)',fontWeight:500,letterSpacing:'0.05em'}}>
+                  4K · {fmt(fps,2)}FPS
+                </div>
+                {/* Level */}
+                <div style={{marginTop:2}}>
+                  <div style={{fontSize:9,...mono,color:'var(--text3)',letterSpacing:'0.1em',marginBottom:3}}>LEVEL</div>
+                  <div style={{
+                    background:'rgba(20,18,14,0.8)',border:'1px solid rgba(255,255,255,0.08)',
+                    borderRadius:4,padding:'2px 8px',fontSize:10,...mono,color:'var(--text)',
+                  }}>KT</div>
+                </div>
+                {/* Color channels */}
+                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:4,marginTop:2}}>
+                  {[['R','#E05555'],['G','#55C855'],['B','#5599E0'],['Y','#E0C855']].map(([c,col])=>(
+                    <div key={c} style={{
+                      background:'rgba(0,0,0,0.6)',border:'1px solid rgba(255,255,255,0.08)',
+                      borderRadius:5,padding:'3px 8px',display:'flex',alignItems:'center',gap:4,
+                    }}>
+                      <div style={{width:6,height:6,borderRadius:'50%',background:col,boxShadow:`0 0 4px ${col}`}}/>
+                      <span style={{fontSize:10,fontWeight:600,color:'var(--text)'}}>{c}</span>
+                    </div>
+                  ))}
+                </div>
+                {/* Aperture + histogram */}
+                <div style={{display:'flex',flexDirection:'column',gap:4,marginTop:2}}>
+                  <div style={{
+                    background:'rgba(0,0,0,0.65)',border:'1px solid rgba(255,255,255,0.08)',
+                    borderRadius:6,padding:'4px 8px',fontSize:11,...mono,fontWeight:600,color:'var(--text)',
+                    display:'inline-flex',alignSelf:'flex-start',
+                  }}>H{aperture}</div>
+                  <Histogram/>
+                </div>
+              </div>
+
+              {/* top-right controls */}
+              <div style={{position:'absolute',top:12,right:12,display:'flex',gap:8,pointerEvents:'all'}}>
+                <button onClick={()=>setPaused(p=>!p)} style={{
+                  background:'rgba(20,18,14,0.85)',border:'1px solid rgba(255,255,255,0.1)',
+                  borderRadius:8,width:36,height:36,cursor:'pointer',
+                  display:'flex',alignItems:'center',justifyContent:'center',
+                  color:'var(--text)',backdropFilter:'blur(4px)',
+                }}>
+                  <Icon name={paused?'play':'pause'} size={14} color="var(--text)"/>
+                </button>
+                <div style={{
+                  background:'rgba(20,18,14,0.85)',border:'1px solid rgba(200,80,80,0.3)',
+                  borderRadius:8,padding:'0 12px',height:36,
+                  display:'flex',alignItems:'center',gap:7,
+                  backdropFilter:'blur(4px)',
+                  pointerEvents:'none',
+                }}>
+                  <div style={{
+                    width:7,height:7,borderRadius:'50%',background:'var(--red)',
+                    boxShadow:'0 0 6px var(--red)',
+                    animation: recording&&!paused ? 'pulse-dot 1s ease infinite' : 'none',
+                  }}/>
+                  <span style={{fontSize:12,...mono,fontWeight:600,color:'var(--text)'}}>
+                    {fmtTime(recTime)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Target lock box */}
+              <div style={{
+                position:'absolute',
+                top:'42%',left:'52%',
+                transform:'translate(-50%,-50%)',
+                animation: 'float-target 6s ease-in-out infinite',
+              }}>
+                <div style={{
+                  width:64,height:64,
+                  border:'1.5px solid var(--gold)',
+                  borderRadius:3,
+                  position:'relative',
+                  boxShadow:'0 0 12px rgba(200,169,110,0.3)',
+                }}>
+                  {/* corners */}
+                  {[{top:-1,left:-1},{top:-1,right:-1},{bottom:-1,left:-1},{bottom:-1,right:-1}].map((pos,i)=>(
+                    <div key={i} style={{
+                      position:'absolute',width:8,height:8,
+                      borderTop: (i<2)?'2px solid var(--gold)':'none',
+                      borderBottom: (i>=2)?'2px solid var(--gold)':'none',
+                      borderLeft: (i%2===0)?'2px solid var(--gold)':'none',
+                      borderRight: (i%2===1)?'2px solid var(--gold)':'none',
+                      ...pos,
+                    }}/>
+                  ))}
+                  {/* crosshair */}
+                  <div style={{position:'absolute',top:'50%',left:'50%',transform:'translate(-50%,-50%)',
+                    width:8,height:8,borderRadius:'50%',border:'1.5px solid var(--gold)',
+                  }}/>
+                  {/* sun/target icon */}
+                  <div style={{position:'absolute',bottom:-20,left:'50%',transform:'translateX(-50%)',
+                    fontSize:9,...mono,color:'var(--gold)',whiteSpace:'nowrap',opacity:0.8,
+                  }}>LOCK</div>
+                </div>
+              </div>
+
+              {/* flight path line */}
+              <svg style={{position:'absolute',inset:0,width:'100%',height:'100%',pointerEvents:'none'}}>
+                <path d="M 200,55% Q 38%,45% 52%,42%" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" fill="none" strokeDasharray="4,3"/>
+                <circle cx="38%" cy="45%" r="4" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5"/>
+              </svg>
+            </div>
+          </div>
+
+          {/* ── FLIGHT CONTROLS ── */}
+          <div style={{...cardStyle,padding:'12px 14px',display:'grid',gridTemplateColumns:'160px 1fr auto',gap:14}}>
+
+            {/* Left: tabs + mini map */}
+            <div style={{display:'flex',flexDirection:'column',gap:10}}>
+              {/* tabs */}
+              <div style={{display:'flex',gap:6}}>
+                {['video','photo'].map(t=>(
+                  <button key={t} onClick={()=>setMediaTab(t)} style={{
+                    flex:1,padding:'5px 0',borderRadius:8,border:'none',cursor:'pointer',
+                    background: mediaTab===t ? 'rgba(200,169,110,0.15)' : 'transparent',
+                    color: mediaTab===t ? 'var(--gold)' : 'var(--text3)',
+                    fontSize:11,fontWeight:600,letterSpacing:'0.06em',
+                    textTransform:'capitalize',
+                    outline: mediaTab===t ? '1px solid rgba(200,169,110,0.2)' : 'none',
+                    transition:'all 0.15s',
+                    display:'flex',alignItems:'center',justifyContent:'center',gap:4,
+                  }}>
+                    <Icon name={t==='video'?'camera':'gallery'} size={11} color={mediaTab===t?'var(--gold)':'var(--text3)'}/>
+                    {t.charAt(0).toUpperCase()+t.slice(1)}
+                  </button>
+                ))}
+              </div>
+              {/* channel bars */}
+              <div style={{display:'flex',gap:6,alignItems:'center'}}>
+                {[1,2].map(ch=>(
+                  <div key={ch} style={{display:'flex',alignItems:'center',gap:4}}>
+                    <span style={{fontSize:9,...mono,color:'var(--text3)',fontWeight:700}}>{ch}</span>
+                    <div style={{display:'flex',gap:1}}>
+                      {Array.from({length:8},(_,i)=>(
+                        <div key={i} style={{width:3,height:10+Math.random()*4,background:`rgba(200,169,110,${0.2+i*0.08})`,borderRadius:1}}/>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* mini map */}
+              <div style={{flex:1,minHeight:80}}>
+                <MiniMap/>
+              </div>
+            </div>
+
+            {/* Center: telemetry grid */}
+            <div style={{display:'flex',flexDirection:'column',gap:10,justifyContent:'center'}}>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr 1fr',gap:'8px 16px'}}>
+                {[
+                  {label:'SPEED',value:`${Math.round(speed)} km/h`},
+                  {label:'LENS',value:'25 mm'},
+                  {label:'FRAME LINE',value:activeLine,big:true},
+                  {label:'HEIGHT',value:`${Math.round(altitude)} m`},
+                  {label:'ISO',value:Math.round(iso)},
+                  {label:'',value:''},
+                  {label:'FLIGHT TIME',value:fmtTime(flightSec)},
+                  {label:'SHUTTER',value:'180.0'},
+                  {label:'',value:''},
+                ].map((item,i)=>(
+                  <div key={i} style={{minHeight:36}}>
+                    {item.label && <>
+                      <div style={{fontSize:9,...mono,color:'var(--text3)',letterSpacing:'0.1em',marginBottom:2}}>{item.label}</div>
+                      <div style={{
+                        fontSize: item.big?13:14,
+                        fontWeight: item.big?700:600,
+                        color: item.big?'var(--gold)':'var(--text)',
+                        ...mono,
+                        animation:'data-flicker 5s ease infinite',
+                      }}>{item.value}</div>
+                    </>}
+                  </div>
+                ))}
+              </div>
+              {/* frame line selector */}
+              <div style={{display:'flex',gap:4,flexWrap:'wrap'}}>
+                {frameLines.map(fl=>(
+                  <button key={fl} onClick={()=>setActiveLine(fl)} style={{
+                    padding:'3px 8px',borderRadius:5,border:'1px solid rgba(255,255,255,0.06)',
+                    background: activeLine===fl ? 'rgba(200,169,110,0.12)' : 'transparent',
+                    color: activeLine===fl ? 'var(--gold)' : 'var(--text3)',
+                    fontSize:9,...mono,cursor:'pointer',transition:'all 0.1s',
+                    outline: activeLine===fl ? '1px solid rgba(200,169,110,0.2)' : 'none',
+                  }}>{fl}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* Right: AWB/DISP + D-pad */}
+            <div style={{display:'flex',flexDirection:'column',gap:10,alignItems:'center',justifyContent:'center'}}>
+              {/* AWB / DISP */}
+              <div style={{display:'flex',gap:6}}>
+                {['AWB','DISP'].map(b=>(
+                  <button key={b} style={{
+                    padding:'5px 10px',borderRadius:8,
+                    border:'1px solid rgba(255,255,255,0.08)',
+                    background:'rgba(255,255,255,0.04)',
+                    color:'var(--text)',fontSize:10,fontWeight:600,
+                    letterSpacing:'0.08em',cursor:'pointer',transition:'all 0.12s',
+                  }}
+                  onMouseDown={e=>e.currentTarget.style.background='rgba(200,169,110,0.1)'}
+                  onMouseUp={e=>e.currentTarget.style.background='rgba(255,255,255,0.04)'}
+                  onMouseLeave={e=>e.currentTarget.style.background='rgba(255,255,255,0.04)'}
+                  >{b}</button>
+                ))}
+              </div>
+              {/* D-pad */}
+              <DPad onPress={handleDpad}/>
+              {dpadMsg && <div style={{fontSize:9,...mono,color:'var(--gold)',letterSpacing:'0.08em',height:14}}>{dpadMsg}</div>}
+              {!dpadMsg && <div style={{height:14}}/>}
+            </div>
+          </div>
+        </div>
+
+        {/* ── RIGHT COLUMN ── */}
+        <div style={{display:'grid',gridTemplateRows:'1fr 1fr',gap:10}}>
+
+          {/* ── VEHICLE INFO ── */}
+          <div style={{...cardStyle,padding:18,display:'flex',flexDirection:'column',gap:14}}>
+            {/* header */}
+            <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between'}}>
+              <div>
+                <div style={{fontSize:16,fontWeight:700,letterSpacing:'0.03em',marginBottom:2}}>ARIA DRONE</div>
+                <div style={{fontSize:10,color:'var(--text2)',letterSpacing:'0.05em'}}>FHD High-Framerate Live Feed</div>
+              </div>
+              <div style={{
+                width:40,height:40,borderRadius:10,
+                background:'rgba(255,255,255,0.04)',border:'1px solid rgba(255,255,255,0.06)',
+                display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,
+              }}>
+                <Icon name="drone" size={20} color="var(--text2)"/>
+              </div>
+            </div>
+
+            <div style={{width:'100%',height:1,background:'rgba(255,255,255,0.05)'}}/>
+
+            {/* battery */}
+            <div>
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+                <div>
+                  <div style={{fontSize:11,fontWeight:600,marginBottom:1}}>Battery status</div>
+                  <div style={{fontSize:9,color:'var(--text3)'}}>12min ago</div>
+                </div>
+                <div style={{fontSize:18,fontWeight:700,color:'var(--gold-bright)',...mono}}>{battery}%</div>
+              </div>
+              <div style={{height:4,background:'rgba(255,255,255,0.08)',borderRadius:2,overflow:'hidden'}}>
+                <div style={{
+                  width:`${battery}%`,height:'100%',
+                  background:`linear-gradient(90deg, var(--gold), var(--gold-bright))`,
+                  borderRadius:2,transition:'width 0.5s ease',
+                }}/>
+              </div>
+            </div>
+
+            {/* altitude */}
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+              <div style={{fontSize:11,fontWeight:600}}>Altitude limited</div>
+              <div style={{fontSize:18,fontWeight:700,...mono}}>{Math.round(altitude * 3.28)} <span style={{fontSize:12,color:'var(--text2)',fontWeight:400}}>ft</span></div>
+            </div>
+
+            {/* slider */}
+            <div>
+              <div style={{height:4,background:'rgba(255,255,255,0.08)',borderRadius:2,position:'relative',cursor:'pointer'}}
+                onClick={e=>{
+                  const rect=e.currentTarget.getBoundingClientRect();
+                  const pct=(e.clientX-rect.left)/rect.width;
+                  setSliderVal(+(pct*10).toFixed(1));
+                }}>
+                <div style={{width:`${sliderVal*10}%`,height:'100%',background:'linear-gradient(90deg,rgba(200,169,110,0.3),var(--gold))',borderRadius:2}}/>
+                <div style={{
+                  position:'absolute',top:'50%',left:`${sliderVal*10}%`,
+                  transform:'translate(-50%,-50%)',
+                  width:14,height:14,borderRadius:'50%',
+                  background:'var(--card3)',border:'2px solid var(--gold)',
+                  boxShadow:'0 0 8px rgba(200,169,110,0.4)',
+                }}/>
+              </div>
+              <div style={{display:'flex',justifyContent:'space-between',marginTop:6}}>
+                <div style={{display:'flex',alignItems:'center',gap:6}}>
+                  <div style={{width:8,height:8,borderRadius:'50%',background:'rgba(255,255,255,0.2)',border:'1.5px solid rgba(255,255,255,0.3)'}}/>
+                  <span style={{fontSize:9,color:'var(--text3)',...mono}}>•O</span>
+                </div>
+                <span style={{fontSize:11,fontWeight:700,...mono,color:'var(--text)'}}>{sliderVal.toFixed(1)}</span>
+              </div>
+            </div>
+
+            <div style={{width:'100%',height:1,background:'rgba(255,255,255,0.05)'}}/>
+
+            {/* mode toggles */}
+            <div style={{display:'flex',gap:8,justifyContent:'center'}}>
+              {[
+                {id:'hdr',icon:'hdr',label:'HDR+'},
+                {id:'night',icon:'moon',label:'Night'},
+                {id:'auto',icon:'settings',label:'Auto'},
+              ].map(m=>(
+                <button key={m.id} onClick={()=>setActiveMode(m.id)} style={{
+                  flex:1,padding:'8px 0',borderRadius:10,border:'none',cursor:'pointer',
+                  background: activeMode===m.id ? 'rgba(200,169,110,0.15)' : 'rgba(255,255,255,0.04)',
+                  outline: activeMode===m.id ? '1px solid rgba(200,169,110,0.3)' : '1px solid rgba(255,255,255,0.04)',
+                  display:'flex',flexDirection:'column',alignItems:'center',gap:4,
+                  transition:'all 0.15s',
+                }}>
+                  <Icon name={m.id==='hdr'?'hdr':m.id==='night'?'moon':'settings'} size={16}
+                    color={activeMode===m.id?'var(--gold)':'var(--text3)'}/>
+                  <span style={{fontSize:8,fontWeight:600,letterSpacing:'0.08em',
+                    color:activeMode===m.id?'var(--gold)':'var(--text3)',
+                  }}>{m.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* ── COMPASS ── */}
+          <div style={{...cardStyle,padding:16,display:'flex',flexDirection:'column',gap:0}}>
+            <Compass heading={heading}/>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
