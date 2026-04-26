@@ -61,6 +61,10 @@ class BeaconIntegration:
             print("🚁 [SIM] Takeoff to 10m")
             return
 
+        print("Setting GUIDED mode...")
+        self.master.set_mode('GUIDED')
+        time.sleep(2)
+
         print("Arming...")
         self.master.mav.command_long_send(
             self.master.target_system,
