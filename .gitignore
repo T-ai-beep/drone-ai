@@ -4,3 +4,4 @@ __pycache__/
 *.pyc
 mav.tlog
 mav.parm      
+.env
