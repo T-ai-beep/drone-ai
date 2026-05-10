@@ -351,15 +351,11 @@ class BeaconLauncher:
         return True
 
     def _launch_dashboard(self):
-        if not Path("server.py").exists():
+        if not Path("server.ts").exists():
             log.warning("server.py not found — dashboard will not start")
             return
         self.pm.spawn(
-            ["python3", "server.py",
-             "--host", self.config.dashboard_host,
-             "--port", str(self.config.dashboard_port)],
-            name="dashboard",
-        )
+            ["bun", "run", "server.ts"])
         log.info(f"Dashboard → http://{self.config.dashboard_host}:{self.config.dashboard_port}")
 
     def _launch_integration(self, scenario: str):
