@@ -344,7 +344,7 @@ class BeaconLauncher:
         self._shutdown_event.set()
 
     def _check_dependencies(self) -> bool:
-        for dep in ["python3"]:
+        for dep in ["python3", "bun"]:
             if subprocess.run(["which", dep], capture_output=True).returncode != 0:
                 log.error(f"Missing dependency: {dep}")
                 return False
@@ -352,10 +352,10 @@ class BeaconLauncher:
 
     def _launch_dashboard(self):
         if not Path("server.ts").exists():
-            log.warning("server.py not found — dashboard will not start")
+            log.warning("server.ts not found — dashboard will not start")
             return
         self.pm.spawn(
-            ["bun", "run", "server.ts"])
+            ["bun", "run", "server.ts"], name="dashboard")
         log.info(f"Dashboard → http://{self.config.dashboard_host}:{self.config.dashboard_port}")
 
     def _launch_integration(self, scenario: str):
