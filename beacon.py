@@ -354,9 +354,13 @@ class BeaconLauncher:
         if not Path("server.ts").exists():
             log.warning("server.ts not found — dashboard will not start")
             return
+        env = os.environ.copy()
+        env["DASHBOARD_HOST"] = self.config.dashboard_host
+        env["DASHBOARD_PORT"] = str(self.config.dashboard_port)
         self.pm.spawn(
             ["bun", "run", "server.ts"],
             name="dashboard",
+            env=env,
         )
         log.info(f"Dashboard → http://{self.config.dashboard_host}:{self.config.dashboard_port}")
 

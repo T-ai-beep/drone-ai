@@ -4,6 +4,8 @@ import * as fs from "fs";
 
 const FRAME_PATH = "/Users/tanayshah/drone/snapshot.jpg";
 const clients = new Set<WebSocket>();
+const DASHBOARD_HOST = process.env.DASHBOARD_HOST || "0.0.0.0";
+const DASHBOARD_PORT = Number(process.env.DASHBOARD_PORT || "3002");
 
 // Capture frame from camera
 function captureFrame(): string | null {
@@ -121,7 +123,8 @@ async function dataLoop() {
 
 // WebSocket server
 const server = serve({
-  port: 3002,
+  hostname: DASHBOARD_HOST,
+  port: DASHBOARD_PORT,
   fetch(req, server) {
     // Serve dashboard HTML
     if (req.url.endsWith("/")) {
@@ -154,7 +157,7 @@ const server = serve({
   }
 });
 
-console.log("🚁 ARIA Server running on http://localhost:3002");
+console.log(`🚁 ARIA Server running on http://${DASHBOARD_HOST}:${DASHBOARD_PORT}`);
 console.log("📡 WebSocket ready for dashboard connection");
 
 dataLoop();
