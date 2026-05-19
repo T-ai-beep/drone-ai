@@ -1,0 +1,475 @@
+{
+  "generated_at": "2026-05-18T19:15:01.110660",
+  "drone_position": {
+    "lat": 33.1032,
+    "lon": -96.6706
+  },
+  "total_unique_devices": 31,
+  "survivor_candidates": [
+    {
+      "mac_address": "92:6E:C0:F0:75:A0",
+      "estimated_lat": 33.103208,
+      "estimated_lon": -96.670618,
+      "triangulation_confidence": 0.43,
+      "likely_mobile_device": true,
+      "detection_count": 1,
+      "avg_signal_dbm": -55.8,
+      "avg_distance_m": 1.9,
+      "frequencies_seen": [
+        "2.4 GHz (WiFi)"
+      ],
+      "first_seen": "2026-05-18T19:14:02.995590",
+      "last_seen": "2026-05-18T19:14:02.995590"
+    },
+    {
+      "mac_address": "22:7C:AF:2D:CC:A8",
+      "estimated_lat": 33.103207,
+      "estimated_lon": -96.670565,
+      "triangulation_confidence": 0.37,
+      "likely_mobile_device": true,
+      "detection_count": 1,
+      "avg_signal_dbm": -60.5,
+      "avg_distance_m": 3.4,
+      "frequencies_seen": [
+        "2.4 GHz (WiFi)"
+      ],
+      "first_seen": "2026-05-18T19:14:02.995629",
+      "last_seen": "2026-05-18T19:14:02.995629"
+    },
+    {
+      "mac_address": "D8:89:A4:9D:F4:D9",
+      "estimated_lat": 33.10316,
+      "estimated_lon": -96.670585,
+      "triangulation_confidence": 0.33,
+      "likely_mobile_device": true,
+      "detection_count": 1,
+      "avg_signal_dbm": -63.4,
+      "avg_distance_m": 4.7,
+      "frequencies_seen": [
+        "2.4 GHz (Bluetooth)"
+      ],
+      "first_seen": "2026-05-18T19:14:04.997105",
+      "last_seen": "2026-05-18T19:14:04.997105"
+    },
+    {
+      "mac_address": "B0:EE:72:2F:DD:84",
+      "estimated_lat": 33.103215,
+      "estimated_lon": -96.670599,
+      "triangulation_confidence": 0.445,
+      "likely_mobile_device": true,
+      "detection_count": 1,
+      "avg_signal_dbm": -54.6,
+      "avg_distance_m": 1.7,
+      "frequencies_seen": [
+        "2.4 GHz (Bluetooth)"
+      ],
+      "first_seen": "2026-05-18T19:14:07.002239",
+      "last_seen": "2026-05-18T19:14:07.002239"
+    },
+    {
+      "mac_address": "96:8C:54:6C:D0:33",
+      "estimated_lat": 33.102474,
+      "estimated_lon": -96.670283,
+      "triangulation_confidence": 0.015,
+      "likely_mobile_device": true,
+      "detection_count": 1,
+      "avg_signal_dbm": -88.7,
+      "avg_distance_m": 86.0,
+      "frequencies_seen": [
+        "2.4 GHz (Bluetooth)"
+      ],
+      "first_seen": "2026-05-18T19:14:07.002270",
+      "last_seen": "2026-05-18T19:14:07.002270"
+    },
+    {
+      "mac_address": "30:B6:60:F8:D4:0C",
+      "estimated_lat": 33.103184,
+      "estimated_lon": -96.670629,
+      "triangulation_confidence": 0.37,
+      "likely_mobile_device": true,
+      "detection_count": 1,
+      "avg_signal_dbm": -60.2,
+      "avg_distance_m": 3.2,
+      "frequencies_seen": [
+        "2.4 GHz (WiFi)"
+      ],
+      "first_seen": "2026-05-18T19:14:07.002287",
+      "last_seen": "2026-05-18T19:14:07.002287"
+    },
+    {
+      "mac_address": "F4:48:79:98:8C:E8",
+      "estimated_lat": 33.103191,
+      "estimated_lon": -96.670595,
+      "triangulation_confidence": 0.485,
+      "likely_mobile_device": true,
+      "detection_count": 1,
+      "avg_signal_dbm": -51.3,
+      "avg_distance_m": 1.2,
+      "frequencies_seen": [
+        "2.4 GHz (WiFi)"
+      ],
+      "first_seen": "2026-05-18T19:14:09.007540",
+      "last_seen": "2026-05-18T19:14:09.007540"
+    },
+    {
+      "mac_address": "6E:4D:5C:DE:5C:7F",
+      "estimated_lat": 33.103203,
+      "estimated_lon": -96.670586,
+      "triangulation_confidence": 0.47,
+      "likely_mobile_device": true,
+      "detection_count": 1,
+      "avg_signal_dbm": -52.6,
+      "avg_distance_m": 1.3,
+      "frequencies_seen": [
+        "2.4 GHz (WiFi)"
+      ],
+      "first_seen": "2026-05-18T19:14:11.012177",
+      "last_seen": "2026-05-18T19:14:11.012177"
+    },
+    {
+      "mac_address": "C6:9A:04:DD:8A:4D",
+      "estimated_lat": 33.103211,
+      "estimated_lon": -96.670648,
+      "triangulation_confidence": 0.335,
+      "likely_mobile_device": true,
+      "detection_count": 1,
+      "avg_signal_dbm": -63.3,
+      "avg_distance_m": 4.6,
+      "frequencies_seen": [
+        "2.4 GHz (Bluetooth)"
+      ],
+      "first_seen": "2026-05-18T19:14:13.017491",
+      "last_seen": "2026-05-18T19:14:13.017491"
+    },
+    {
+      "mac_address": "32:4D:C1:39:25:BF",
+      "estimated_lat": 33.103088,
+      "estimated_lon": -96.670753,
+      "triangulation_confidence": 0.18,
+      "likely_mobile_device": true,
+      "detection_count": 1,
+      "avg_signal_dbm": -75.5,
+      "avg_distance_m": 18.9,
+      "frequencies_seen": [
+        "2.4 GHz (WiFi)"
+      ],
+      "first_seen": "2026-05-18T19:14:17.025913",
+      "last_seen": "2026-05-18T19:14:17.025913"
+    },
+    {
+      "mac_address": "C0:E3:97:FF:F1:A9",
+      "estimated_lat": 33.103254,
+      "estimated_lon": -96.670352,
+      "triangulation_confidence": 0.155,
+      "likely_mobile_device": true,
+      "detection_count": 1,
+      "avg_signal_dbm": -77.5,
+      "avg_distance_m": 23.8,
+      "frequencies_seen": [
+        "2.4 GHz (WiFi)"
+      ],
+      "first_seen": "2026-05-18T19:14:17.025978",
+      "last_seen": "2026-05-18T19:14:17.025978"
+    },
+    {
+      "mac_address": "3C:CB:C6:1D:B8:CC",
+      "estimated_lat": 33.103197,
+      "estimated_lon": -96.670618,
+      "triangulation_confidence": 0.44,
+      "likely_mobile_device": true,
+      "detection_count": 1,
+      "avg_signal_dbm": -54.7,
+      "avg_distance_m": 1.7,
+      "frequencies_seen": [
+        "2.4 GHz (Bluetooth)"
+      ],
+      "first_seen": "2026-05-18T19:14:19.029240",
+      "last_seen": "2026-05-18T19:14:19.029240"
+    },
+    {
+      "mac_address": "34:E6:34:4E:AF:3A",
+      "estimated_lat": 33.10294,
+      "estimated_lon": -96.670221,
+      "triangulation_confidence": 0.085,
+      "likely_mobile_device": true,
+      "detection_count": 1,
+      "avg_signal_dbm": -83.2,
+      "avg_distance_m": 45.6,
+      "frequencies_seen": [
+        "2.4 GHz (Bluetooth)"
+      ],
+      "first_seen": "2026-05-18T19:14:19.029384",
+      "last_seen": "2026-05-18T19:14:19.029384"
+    },
+    {
+      "mac_address": "5C:08:9A:52:45:6B",
+      "estimated_lat": 33.103375,
+      "estimated_lon": -96.670619,
+      "triangulation_confidence": 0.175,
+      "likely_mobile_device": true,
+      "detection_count": 1,
+      "avg_signal_dbm": -75.8,
+      "avg_distance_m": 19.5,
+      "frequencies_seen": [
+        "2.4 GHz (Bluetooth)"
+      ],
+      "first_seen": "2026-05-18T19:14:25.034766",
+      "last_seen": "2026-05-18T19:14:25.034766"
+    },
+    {
+      "mac_address": "BC:48:45:DE:0E:31",
+      "estimated_lat": 33.103269,
+      "estimated_lon": -96.67068,
+      "triangulation_confidence": 0.245,
+      "likely_mobile_device": true,
+      "detection_count": 1,
+      "avg_signal_dbm": -70.6,
+      "avg_distance_m": 10.7,
+      "frequencies_seen": [
+        "2.4 GHz (Bluetooth)"
+      ],
+      "first_seen": "2026-05-18T19:14:27.040034",
+      "last_seen": "2026-05-18T19:14:27.040034"
+    },
+    {
+      "mac_address": "24:00:57:C2:B8:AA",
+      "estimated_lat": 33.103216,
+      "estimated_lon": -96.670622,
+      "triangulation_confidence": 0.39,
+      "likely_mobile_device": true,
+      "detection_count": 1,
+      "avg_signal_dbm": -58.7,
+      "avg_distance_m": 2.7,
+      "frequencies_seen": [
+        "2.4 GHz (Bluetooth)"
+      ],
+      "first_seen": "2026-05-18T19:14:29.045057",
+      "last_seen": "2026-05-18T19:14:29.045057"
+    },
+    {
+      "mac_address": "AE:14:E2:9D:C0:B3",
+      "estimated_lat": 33.103158,
+      "estimated_lon": -96.670687,
+      "triangulation_confidence": 0.255,
+      "likely_mobile_device": true,
+      "detection_count": 1,
+      "avg_signal_dbm": -69.4,
+      "avg_distance_m": 9.4,
+      "frequencies_seen": [
+        "2.4 GHz (Bluetooth)"
+      ],
+      "first_seen": "2026-05-18T19:14:29.045101",
+      "last_seen": "2026-05-18T19:14:29.045101"
+    },
+    {
+      "mac_address": "6A:B1:CC:AD:8B:A7",
+      "estimated_lat": 33.103149,
+      "estimated_lon": -96.670609,
+      "triangulation_confidence": 0.31,
+      "likely_mobile_device": true,
+      "detection_count": 1,
+      "avg_signal_dbm": -65.2,
+      "avg_distance_m": 5.7,
+      "frequencies_seen": [
+        "2.4 GHz (Bluetooth)"
+      ],
+      "first_seen": "2026-05-18T19:14:29.045124",
+      "last_seen": "2026-05-18T19:14:29.045124"
+    },
+    {
+      "mac_address": "00:91:07:12:93:BB",
+      "estimated_lat": 33.103203,
+      "estimated_lon": -96.670568,
+      "triangulation_confidence": 0.38,
+      "likely_mobile_device": true,
+      "detection_count": 1,
+      "avg_signal_dbm": -59.6,
+      "avg_distance_m": 3.0,
+      "frequencies_seen": [
+        "2.4 GHz (WiFi)"
+      ],
+      "first_seen": "2026-05-18T19:14:33.055528",
+      "last_seen": "2026-05-18T19:14:33.055528"
+    },
+    {
+      "mac_address": "14:32:32:22:05:7A",
+      "estimated_lat": 33.103313,
+      "estimated_lon": -96.67072,
+      "triangulation_confidence": 0.195,
+      "likely_mobile_device": true,
+      "detection_count": 1,
+      "avg_signal_dbm": -74.5,
+      "avg_distance_m": 16.8,
+      "frequencies_seen": [
+        "2.4 GHz (WiFi)"
+      ],
+      "first_seen": "2026-05-18T19:14:33.055578",
+      "last_seen": "2026-05-18T19:14:33.055578"
+    },
+    {
+      "mac_address": "C2:D7:63:96:47:DA",
+      "estimated_lat": 33.103244,
+      "estimated_lon": -96.67164,
+      "triangulation_confidence": 0.005,
+      "likely_mobile_device": true,
+      "detection_count": 1,
+      "avg_signal_dbm": -89.7,
+      "avg_distance_m": 97.0,
+      "frequencies_seen": [
+        "2.4 GHz (WiFi)"
+      ],
+      "first_seen": "2026-05-18T19:14:33.055622",
+      "last_seen": "2026-05-18T19:14:33.055622"
+    },
+    {
+      "mac_address": "68:60:73:4E:88:78",
+      "estimated_lat": 33.103219,
+      "estimated_lon": -96.670591,
+      "triangulation_confidence": 0.41,
+      "likely_mobile_device": true,
+      "detection_count": 1,
+      "avg_signal_dbm": -57.0,
+      "avg_distance_m": 2.2,
+      "frequencies_seen": [
+        "2.4 GHz (Bluetooth)"
+      ],
+      "first_seen": "2026-05-18T19:14:43.076097",
+      "last_seen": "2026-05-18T19:14:43.076097"
+    },
+    {
+      "mac_address": "D8:27:DF:C1:C5:CD",
+      "estimated_lat": 33.103083,
+      "estimated_lon": -96.670734,
+      "triangulation_confidence": 0.185,
+      "likely_mobile_device": true,
+      "detection_count": 1,
+      "avg_signal_dbm": -75.1,
+      "avg_distance_m": 18.0,
+      "frequencies_seen": [
+        "2.4 GHz (WiFi)"
+      ],
+      "first_seen": "2026-05-18T19:14:45.078944",
+      "last_seen": "2026-05-18T19:14:45.078944"
+    },
+    {
+      "mac_address": "AE:71:A5:1A:FB:94",
+      "estimated_lat": 33.10334,
+      "estimated_lon": -96.670598,
+      "triangulation_confidence": 0.2,
+      "likely_mobile_device": true,
+      "detection_count": 1,
+      "avg_signal_dbm": -73.8,
+      "avg_distance_m": 15.6,
+      "frequencies_seen": [
+        "2.4 GHz (Bluetooth)"
+      ],
+      "first_seen": "2026-05-18T19:14:55.095743",
+      "last_seen": "2026-05-18T19:14:55.095743"
+    },
+    {
+      "mac_address": "CE:EB:C9:F7:28:A6",
+      "estimated_lat": 33.103133,
+      "estimated_lon": -96.670534,
+      "triangulation_confidence": 0.255,
+      "likely_mobile_device": true,
+      "detection_count": 1,
+      "avg_signal_dbm": -69.7,
+      "avg_distance_m": 9.7,
+      "frequencies_seen": [
+        "2.4 GHz (Bluetooth)"
+      ],
+      "first_seen": "2026-05-18T19:14:55.095809",
+      "last_seen": "2026-05-18T19:14:55.095809"
+    },
+    {
+      "mac_address": "50:AE:50:77:FE:DF",
+      "estimated_lat": 33.103199,
+      "estimated_lon": -96.670616,
+      "triangulation_confidence": 0.455,
+      "likely_mobile_device": true,
+      "detection_count": 1,
+      "avg_signal_dbm": -53.7,
+      "avg_distance_m": 1.5,
+      "frequencies_seen": [
+        "2.4 GHz (Bluetooth)"
+      ],
+      "first_seen": "2026-05-18T19:14:55.095844",
+      "last_seen": "2026-05-18T19:14:55.095844"
+    },
+    {
+      "mac_address": "DA:3B:E8:E2:E3:6C",
+      "estimated_lat": 33.103221,
+      "estimated_lon": -96.670602,
+      "triangulation_confidence": 0.41,
+      "likely_mobile_device": true,
+      "detection_count": 1,
+      "avg_signal_dbm": -57.4,
+      "avg_distance_m": 2.3,
+      "frequencies_seen": [
+        "2.4 GHz (Bluetooth)"
+      ],
+      "first_seen": "2026-05-18T19:14:57.100501",
+      "last_seen": "2026-05-18T19:14:57.100501"
+    },
+    {
+      "mac_address": "02:F0:42:9E:E1:5A",
+      "estimated_lat": 33.102695,
+      "estimated_lon": -96.670867,
+      "triangulation_confidence": 0.055,
+      "likely_mobile_device": true,
+      "detection_count": 1,
+      "avg_signal_dbm": -85.8,
+      "avg_distance_m": 61.4,
+      "frequencies_seen": [
+        "2.4 GHz (WiFi)"
+      ],
+      "first_seen": "2026-05-18T19:14:57.100573",
+      "last_seen": "2026-05-18T19:14:57.100573"
+    },
+    {
+      "mac_address": "12:BB:15:F8:17:4D",
+      "estimated_lat": 33.103734,
+      "estimated_lon": -96.670188,
+      "triangulation_confidence": 0.04,
+      "likely_mobile_device": true,
+      "detection_count": 1,
+      "avg_signal_dbm": -87.0,
+      "avg_distance_m": 70.7,
+      "frequencies_seen": [
+        "2.4 GHz (Bluetooth)"
+      ],
+      "first_seen": "2026-05-18T19:14:59.104352",
+      "last_seen": "2026-05-18T19:14:59.104352"
+    },
+    {
+      "mac_address": "BC:7B:1E:A6:F6:EB",
+      "estimated_lat": 33.103207,
+      "estimated_lon": -96.67059,
+      "triangulation_confidence": 0.475,
+      "likely_mobile_device": true,
+      "detection_count": 1,
+      "avg_signal_dbm": -51.9,
+      "avg_distance_m": 1.2,
+      "frequencies_seen": [
+        "2.4 GHz (Bluetooth)"
+      ],
+      "first_seen": "2026-05-18T19:14:59.104409",
+      "last_seen": "2026-05-18T19:14:59.104409"
+    },
+    {
+      "mac_address": "58:33:6A:06:7B:36",
+      "estimated_lat": 33.103202,
+      "estimated_lon": -96.670586,
+      "triangulation_confidence": 0.47,
+      "likely_mobile_device": true,
+      "detection_count": 1,
+      "avg_signal_dbm": -52.2,
+      "avg_distance_m": 1.3,
+      "frequencies_seen": [
+        "2.4 GHz (WiFi)"
+      ],
+      "first_seen": "2026-05-18T19:14:59.104445",
+      "last_seen": "2026-05-18T19:14:59.104445"
+    }
+  ]
+}
