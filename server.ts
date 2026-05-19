@@ -88,12 +88,41 @@ function broadcast(data: object) {
   });
 }
 
+function getAdvisorRecommendation(): object {
+  try {
+    const result = execSync(`python3 -c "
+import sys
+sys.path.insert(0, '/Users/tanayshah/drone')
+from advisor import get_recommendation
+import json
+
+consensus_map = {
+    'scenario': 'wildfire — Allen TX Sector 4',
+    'zones': [{'id': 'ZONE-7', 'status': 'RED', 'coords': (33.1584, -96.6735), 'flagged_by': ['FARSITE', 'Rothermel', 'WindNinja']}]
+}
+thermal = [{'id': 'THERM-001', 'label': 'survivor_candidate', 'confidence': 0.91, 'bearing_deg': 47}]
+fleet = {'DRONE-1': {'type': 'quadcopter', 'battery_pct': 75, 'status': 'active'}}
+
+rec, reasons, conf, ts = get_recommendation(consensus_map, thermal, fleet)
+print(json.dumps({'recommendation': rec, 'reasons': reasons, 'confidence': conf, 'timestamp': ts}))
+"`, { timeout: 60000 });
+    return JSON.parse(result.toString());
+  } catch (e) {
+    return { recommendation: "Advisor unavailable", reasons: [], confidence: 0, timestamp: "" };
+  }
+}
+
 // Main data loop
 let frameCount = 0;
+let advisorData: object = { recommendation: "Awaiting AI advisor...", reasons: [], confidence: 0, timestamp: "" };
+let advisorCounter = 0;
 async function dataLoop() {
   while (true) {
     frameCount++;
-
+    advisorCounter++;
+    if (advisorCounter % 30 === 0) {
+      advisorData = getAdvisorRecommendation();
+}
     // Capture frame
     const frame = captureFrame();
     
@@ -112,6 +141,7 @@ async function dataLoop() {
       frame: frame,
       telemetry,
       analysis,
+      advisor: advisorData,
       timestamp: Date.now()
     });
 
