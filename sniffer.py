@@ -62,28 +62,68 @@ def signal_to_confidence(dbm: float) -> float:
     return round(min(1.0, max(0.0, normalized)), 2)
 
 
-def simulate_scan(drone_lat: float, drone_lon: float) -> list[dict]:
+def create_device_pool(drone_lat: float, drone_lon: float, size: int = 8) -> list[dict]:
+    """
+    Create a persistent set of devices that exist in the area for the full scan session.
+    Each has a fixed true position and base signal; detections will be noisy samples of these.
+    """
+    pool = []
+    for _ in range(size):
+        distance = random.uniform(2, 80)
+        true_lat, true_lon = offset_coords(drone_lat, drone_lon, distance)
+        pool.append({
+            "mac": generate_fake_mac(),
+            "true_lat": true_lat,
+            "true_lon": true_lon,
+            "base_signal_dbm": random.uniform(-85, -55),
+            "frequency": random.choice([WIFI_FREQ, BT_FREQ]),
+        })
+    return pool
+
+
+def simulate_scan(drone_lat: float, drone_lon: float, device_pool: list[dict]) -> list[dict]:
     detections = []
-    if random.random() < 0.7:  # 70% chance of detecting something each scan
-        num_devices = random.randint(1, 3)
-        for _ in range(num_devices):
-            dbm = random.uniform(SIGNAL_THRESHOLD, -50)
-            if dbm < SIGNAL_THRESHOLD:
-                continue
-            distance = dbm_to_distance(dbm)
-            est_lat, est_lon = offset_coords(drone_lat, drone_lon, distance)
-            freq = random.choice([WIFI_FREQ, BT_FREQ])
-            detection = {
-                "mac_address": generate_fake_mac(),
-                "signal_strength_dbm": round(dbm, 1),
-                "frequency": freq,
-                "timestamp": datetime.datetime.now().isoformat(),
-                "estimated_distance_m": distance,
-                "lat": est_lat,
-                "lon": est_lon,
-                "confidence": signal_to_confidence(dbm),
-            }
-            detections.append(detection)
+
+    for device in device_pool:
+        if random.random() > 0.30:  # 30% detection chance per device per scan
+            continue
+
+        noisy_signal = device["base_signal_dbm"] + random.uniform(-3, 3)
+        noisy_signal = round(max(-90.0, min(-50.0, noisy_signal)), 1)
+
+        distance = dbm_to_distance(noisy_signal)
+
+        # Small positional noise: offset true position by 0-2m in a random direction
+        noise_dist = random.uniform(0, 2)
+        noisy_lat, noisy_lon = offset_coords(device["true_lat"], device["true_lon"], noise_dist)
+
+        detections.append({
+            "mac_address": device["mac"],
+            "signal_strength_dbm": noisy_signal,
+            "frequency": device["frequency"],
+            "timestamp": datetime.datetime.now().isoformat(),
+            "estimated_distance_m": distance,
+            "lat": noisy_lat,
+            "lon": noisy_lon,
+            "confidence": signal_to_confidence(noisy_signal),
+        })
+
+    # 10% chance of a completely spurious noise device per scan
+    if random.random() < 0.10:
+        dbm = random.uniform(-90, -50)
+        distance = dbm_to_distance(dbm)
+        est_lat, est_lon = offset_coords(drone_lat, drone_lon, distance)
+        detections.append({
+            "mac_address": generate_fake_mac(),
+            "signal_strength_dbm": round(dbm, 1),
+            "frequency": random.choice([WIFI_FREQ, BT_FREQ]),
+            "timestamp": datetime.datetime.now().isoformat(),
+            "estimated_distance_m": distance,
+            "lat": est_lat,
+            "lon": est_lon,
+            "confidence": signal_to_confidence(dbm),
+        })
+
     return detections
 
 
@@ -91,11 +131,13 @@ def run_sniffer(drone_lat: float, drone_lon: float, duration_seconds: int) -> tu
     all_detections = []
     unique_devices: dict[str, list[dict]] = {}
 
+    device_pool = create_device_pool(drone_lat, drone_lon)
     scans = duration_seconds // SCAN_INTERVAL
+    print(f"[BEACON] Device pool: {len(device_pool)} persistent devices seeded in area")
     print(f"[BEACON] Running {scans} scans over {duration_seconds}s at ({drone_lat}, {drone_lon})")
 
     for i in range(scans):
-        detections = simulate_scan(drone_lat, drone_lon)
+        detections = simulate_scan(drone_lat, drone_lon, device_pool)
         for d in detections:
             all_detections.append(d)
             mac = d["mac_address"]
